@@ -8,7 +8,7 @@ import { UsersService } from './users.service';
 
 @Resolver((of) => User)
 export class UsersResolver {
-  constructor(private readonly userService: UsersService) {}
+  constructor(private readonly usersService: UsersService) {}
 
   @Query((returns) => Boolean)
   hi() {
@@ -20,15 +20,12 @@ export class UsersResolver {
     @Args('input') createAccountInput: CreateAccountInput,
   ): Promise<CreateAccountOutput> {
     try {
-      const error = await this.userService.createAccount(createAccountInput);
-      if (error) {
-        return {
-          ok: false,
-          error,
-        };
-      }
+      const { ok, error } = await this.usersService.createAccount(
+        createAccountInput,
+      );
       return {
-        ok: true,
+        ok,
+        error,
       };
     } catch (error) {
       return {
