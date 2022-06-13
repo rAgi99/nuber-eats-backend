@@ -22,12 +22,8 @@ import { JwtModule } from './jwt/jwt.module';
         DB_USERNAME: Joi.string().required(),
         DB_PASSWORD: Joi.string().required(),
         DB_NAME: Joi.string().required(),
-        SECRET_KEY: Joi.string().required(),
+        PRIVATE_KEY: Joi.string().required(),
       }),
-    }),
-    GraphQLModule.forRoot<ApolloDriverConfig>({
-      driver: ApolloDriver,
-      autoSchemaFile: true,
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
@@ -40,9 +36,15 @@ import { JwtModule } from './jwt/jwt.module';
       logging: process.env.NODE_ENV !== 'prod',
       entities: [User],
     }),
+    GraphQLModule.forRoot<ApolloDriverConfig>({
+      driver: ApolloDriver,
+      autoSchemaFile: true,
+    }),
+    JwtModule.forRoot({
+      privateKey: process.env.PRIVATE_KEY,
+    }),
     UsersModule,
     CommonModule,
-    JwtModule,
   ],
 })
 export class AppModule {}
