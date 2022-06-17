@@ -105,7 +105,10 @@ export class UserService {
         user.verified = false;
         const countedUser: number = await this.users.count({ email });
         if (countedUser !== 0) {
-          return { ok: false, error: 'that email is already taken' };
+          return {
+            ok: false,
+            error: 'There is a user with that email already',
+          };
         }
         await this.verifications.delete({ user: { id: user.id } });
         const verification = await this.verifications.save(
