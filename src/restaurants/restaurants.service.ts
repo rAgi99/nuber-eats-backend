@@ -11,18 +11,19 @@ import {
   EditRestaurantOutput,
 } from './dtos/edit-restaurant.dto';
 import { Category } from './entities/category.entity';
+
 import { Restaurant } from './entities/restaurant.entity';
-import { CategoryRepository } from './repositories/category.repository';
 
 @Injectable()
 export class RestaurantService {
   constructor(
     @InjectRepository(Restaurant)
     private readonly restaurants: Repository<Restaurant>,
-    private readonly categories: CategoryRepository,
+    @InjectRepository(Category)
+    private readonly categories: Repository<Category>,
   ) {}
 
-  async getOrCreate(name: string): Promise<Category> {
+  async getOrCrerateCategory(name: string): Promise<Category> {
     const categoryName = name;
     const categorySlug = categoryName.replace(/ /g, '-');
     let category = await this.categories.findOne({ slug: categorySlug });
@@ -41,7 +42,7 @@ export class RestaurantService {
     try {
       const newRestaurant = this.restaurants.create(createRestaurantInput);
       newRestaurant.owner = owner;
-      const category = await this.categories.getOrCreate(
+      const category = await this.getOrCrerateCategory(
         createRestaurantInput.categoryName,
       );
       newRestaurant.category = category;
@@ -77,24 +78,11 @@ export class RestaurantService {
           error: "You can't edit a restaurant that you don't own",
         };
       }
-      let category: Category = null;
-      if (editRestaurantInput.categoryName) {
-        category = await this.categories.getOrCreate(
-          editRestaurantInput.categoryName,
-        );
-      }
-      await this.restaurants.save([
-        {
-          id: editRestaurantInput.restaurantId,
-          name: editRestaurantInput.name,
-          ...editRestaurantInput,
-          ...(category && { category }),
-        },
-      ]);
+
       return {
         ok: true,
       };
-    } catch {
+    } catch (error) {
       return {
         ok: false,
         error: 'Could not edit Restaurant',
