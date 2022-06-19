@@ -39,9 +39,9 @@ export class UserResolver {
   @Query((returns) => userProfileOutput)
   @Role(['Any'])
   async userProfile(
-    @Args() UserProfileInput: UserProfileInput,
+    @Args() userProfileInput: UserProfileInput,
   ): Promise<userProfileOutput> {
-    return this.usersService.findById(UserProfileInput.userId);
+    return this.usersService.findById(userProfileInput.userId);
   }
 
   @Mutation((returns) => EditProfileOutput)
