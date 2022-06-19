@@ -86,7 +86,6 @@ export class RestaurantService {
       await this.restaurants.save([
         {
           id: editRestaurantInput.restaurantId,
-          name: editRestaurantInput.name,
           ...editRestaurantInput,
           ...(category && { category }),
         },
