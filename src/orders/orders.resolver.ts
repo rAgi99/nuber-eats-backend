@@ -1,7 +1,7 @@
 import { Args, Mutation, Resolver } from '@nestjs/graphql';
-import { User } from 'aws-sdk/clients/budgets';
 import { AuthUser } from 'src/auth/auth-user.decorator';
 import { Role } from 'src/auth/role.decorator';
+import { User } from 'src/users/entities/user.entity';
 import { CreateOrderInput, CreateOrderOutput } from './dtos/create-order.dto';
 import { Order } from './entities/order.entity';
 import { OrderService } from './orders.service';

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from 'aws-sdk/clients/budgets';
 import { Restaurant } from 'src/restaurants/entities/restaurant.entity';
+import { User } from 'src/users/entities/user.entity';
 import { Repository } from 'typeorm';
 import { CreateOrderInput, CreateOrderOutput } from './dtos/create-order.dto';
 import { Order } from './entities/order.entity';
@@ -14,6 +14,7 @@ export class OrderService {
     @InjectRepository(Restaurant)
     private readonly restaurants: Repository<Restaurant>,
   ) {}
+
   async createOrder(
     customer: User,
     { restaurantId, items }: CreateOrderInput,
@@ -25,5 +26,12 @@ export class OrderService {
         error: 'Restaurant not found',
       };
     }
+    const order = await this.orders.save(
+      this.orders.create({
+        customer,
+        restaurant,
+      }),
+    );
+    console.log(order);
   }
 }
