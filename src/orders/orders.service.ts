@@ -1,5 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { PubSub } from 'graphql-subscriptions';
+import { NEW_PENDING_ORDER, PUB_SUB } from 'src/common/common.constants';
 import { Dish } from 'src/restaurants/entities/dish.entity';
 import { Restaurant } from 'src/restaurants/entities/restaurant.entity';
 import { User, UserRole } from 'src/users/entities/user.entity';
@@ -22,6 +24,7 @@ export class OrderService {
     private readonly restaurants: Repository<Restaurant>,
     @InjectRepository(Dish)
     private readonly dishes: Repository<Dish>,
+    @Inject(PUB_SUB) private readonly pubSub: PubSub,
   ) {}
 
   async createOrder(
@@ -43,7 +46,7 @@ export class OrderService {
         if (!dish) {
           return {
             ok: false,
-            error: 'Dish not found',
+            error: 'Dish not found.',
           };
         }
         let dishFinalPrice = dish.price;
@@ -83,17 +86,17 @@ export class OrderService {
           items: orderItems,
         }),
       );
+      await this.pubSub.publish(NEW_PENDING_ORDER, { pendingOrders: order });
       return {
         ok: true,
       };
     } catch {
       return {
         ok: false,
-        error: 'Could not create order',
+        error: 'Could not create order.',
       };
     }
   }
-
   async getOrders(
     user: User,
     { status }: GetOrdersInput,
@@ -111,13 +114,13 @@ export class OrderService {
         orders = await this.orders.find({
           where: {
             driver: user,
+            ...(status && { status }),
           },
         });
       } else if (user.role === UserRole.Owner) {
         const restaurants = await this.restaurants.find({
           where: {
             owner: user,
-            ...(status && { status }),
           },
           relations: ['orders'],
         });
@@ -137,7 +140,6 @@ export class OrderService {
       };
     }
   }
-
   canSeeOrder(user: User, order: Order): boolean {
     let canSee = true;
     if (user.role === UserRole.Client && order.customerId !== user.id) {
@@ -151,7 +153,6 @@ export class OrderService {
     }
     return canSee;
   }
-
   async getOrder(
     user: User,
     { id: orderId }: GetOrderInput,
@@ -163,14 +164,13 @@ export class OrderService {
       if (!order) {
         return {
           ok: false,
-          error: 'Order not found',
+          error: 'Order not found.',
         };
       }
-
       if (!this.canSeeOrder(user, order)) {
         return {
           ok: false,
-          error: "You can't see that",
+          error: 'You cant see that',
         };
       }
       return {
@@ -180,11 +180,10 @@ export class OrderService {
     } catch {
       return {
         ok: false,
-        error: 'Could not load order',
+        error: 'Could not load order.',
       };
     }
   }
-
   async editOrder(
     user: User,
     { id: orderId, status }: EditOrderInput,
@@ -196,13 +195,13 @@ export class OrderService {
       if (!order) {
         return {
           ok: false,
-          error: 'Order not found',
+          error: 'Order not found.',
         };
       }
       if (!this.canSeeOrder(user, order)) {
         return {
           ok: false,
-          error: "Can't see this",
+          error: "Can't see this.",
         };
       }
       let canEdit = true;
@@ -225,7 +224,7 @@ export class OrderService {
       if (!canEdit) {
         return {
           ok: false,
-          error: "You can't do that",
+          error: "You can't do that.",
         };
       }
       await this.orders.save([
@@ -240,7 +239,7 @@ export class OrderService {
     } catch {
       return {
         ok: false,
-        error: 'Could not edit order',
+        error: 'Could not edit order.',
       };
     }
   }
