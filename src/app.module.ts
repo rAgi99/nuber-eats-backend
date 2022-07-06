@@ -88,6 +88,7 @@ import { UploadsModule } from './uploads/uploads.module';
     CommonModule,
     PaymentsModule,
     UploadsModule,
+    ConfigModule,
   ],
 })
 export class AppModule {}
